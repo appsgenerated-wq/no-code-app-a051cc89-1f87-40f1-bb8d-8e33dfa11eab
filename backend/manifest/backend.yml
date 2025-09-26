@@ -1,0 +1,55 @@
+name: CreatorFolio
+description: A platform for creators to showcase their projects.
+
+entities:
+  User:
+    authenticable: true
+    properties:
+      - name
+      - { name: email, type: email }
+      - { name: role, type: choice, options: { values: [admin, user], default: user } }
+      - { name: bio, type: text, options: { required: false } }
+      - { name: avatar, type: image, options: { required: false, sizes: { thumbnail: { width: 100, height: 100 } } } }
+    policies:
+      create:
+        - access: admin
+      read:
+        - { access: restricted, allow: User, condition: self }
+        - access: admin
+      update:
+        - { access: restricted, allow: User, condition: self }
+        - access: admin
+      delete:
+        - access: admin
+      signup:
+        - access: public
+
+  Project:
+    properties:
+      - { name: title, type: string }
+      - { name: description, type: text }
+      - { name: projectUrl, type: string, options: { required: false } }
+      - { name: coverImage, type: image, options: { sizes: { card: { width: 600, height: 400 } } } }
+      - { name: status, type: choice, options: { values: [draft, published], default: draft } }
+    belongsTo:
+      - { name: owner, entity: User }
+    policies:
+      create:
+        - { access: restricted, allow: User }
+      read:
+        - access: public
+      update:
+        - { access: restricted, allow: User, condition: self }
+        - access: admin
+      delete:
+        - { access: restricted, allow: User, condition: self }
+        - access: admin
+
+
+# Health check endpoint for connection testing
+endpoints:
+  healthCheck:
+    path: /api/health
+    method: GET
+    handler: healthCheck
+    policies: []  # Public access for health checks
